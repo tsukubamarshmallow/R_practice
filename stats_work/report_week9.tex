@@ -1,0 +1,246 @@
+\documentclass[fontsize = 8pt, paper= a4]{jlreq}
+
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\definecolor{OliveGreen}{rgb}{0.0,0.6,0.0}
+\definecolor{Magenta}{cmyk}{0, 1, 0, 0}
+\definecolor{colFunc}{rgb}{1,0.07,0.54}
+\definecolor{CadetBlue}{cmyk}{0.62,0.57,0.23,0}
+\definecolor{Brown}{cmyk}{0,0.81,1,0.60}
+\definecolor{colID}{rgb}{0.63,0.44,0}
+\lstset{
+language={C},                   %言語の指定
+basicstyle={\ttfamily\small},        %書体の指定
+backgroundcolor={\color[gray]{.95}}, %背景色と透過度
+keywordstyle={\color{blue}},         %キーワード(int, ifなど)の書体指定
+commentstyle={\color{OliveGreen}},   %注釈の書体 
+stringstyle=\color{Magenta},         %文字列
+frame=single,                        %枠縁(leftline，topline，bottomline，lines，trBL，shadowbox, single)
+numbers=left,                        %行番号表示
+numberstyle={\ttfamily\small},       %行番号の書体指定
+breaklines=true,                     %折り返し(自動改行)
+breakindent = 10pt,                  %自動改行後のインデント量(デフォルトでは20[pt])	
+tabsize=2,                           %タブの大きさ
+captionpos=t                         %キャプションの場所(t,b : "tb"ならば上下両方に記載)
+}
+\renewcommand{\lstlistingname}{図} % キャプション名の指定
+
+\begin{document}
+
+\title{統計分析法　第8週レポート}
+\author{202212022 田島瑞起}
+\date{2023/12/12}
+\maketitle
+\section{(7)解答}
+交互作用も考慮した場合の重回帰分析モデルを下に表す。
+$grmax = -27.12+0.1797*age+0.3545*ht-2.36*wt-0.001728*(age*ht)+0.01879*(age*wt)+0.01614*(ht*wt)-0.0001217*(age*ht*wt)$
+自由度調整済み決定係数に関しては、Multiple R-squared:0.6138,Adjusted R-squared:0.6108であり、回帰残差は6.052となる。
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single]
+    Call:
+    lm(formula = grmax ~ age * ht * wt, data = data)
+    
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -28.920  -3.795  -0.262   3.627  22.681 
+    
+    Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)
+    (Intercept) -2.712e+01  1.182e+02  -0.230    0.819
+    age          1.797e-01  1.882e+00   0.095    0.924
+    ht           3.545e-01  7.549e-01   0.470    0.639
+    wt          -2.360e+00  1.999e+00  -1.181    0.238
+    age:ht      -1.728e-03  1.208e-02  -0.143    0.886
+    age:wt       1.879e-02  3.244e-02   0.579    0.563
+    ht:wt        1.614e-02  1.258e-02   1.282    0.200
+    age:ht:wt   -1.217e-04  2.051e-04  -0.593    0.553
+    
+    Residual standard error: 6.052 on 901 degrees of freedom
+    Multiple R-squared:  0.6138,    Adjusted R-squared:  0.6108 
+    F-statistic: 204.6 on 7 and 901 DF,  p-value: < 2.2e-16
+\end{lstlisting}
+(5)の結果と比較するために、(5)のsummaryを下に表す。
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single]
+    Call:
+    lm(formula = grmax ~ age + ht + wt, data = data)
+    
+    Residuals:
+         Min       1Q   Median       3Q      Max 
+    -28.9156  -3.9633  -0.2197   3.7000  22.3128 
+    
+    Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) -88.46022    4.59757 -19.241  < 2e-16 ***
+    age          -0.10569    0.02027  -5.213 2.30e-07 ***
+    ht            0.75014    0.03132  23.950  < 2e-16 ***
+    wt            0.16476    0.02665   6.182 9.54e-10 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+    
+    Residual standard error: 6.181 on 905 degrees of freedom
+    Multiple R-squared:  0.5955,    Adjusted R-squared:  0.5941 
+    F-statistic: 444.1 on 3 and 905 DF,  p-value: < 2.2e-16    
+\end{lstlisting}
+総合的に、Adjusted R-squaredが高く、
+残差も小さい交互作用を考慮したモデルの方が、(5)のモデルよりも実態に即していると言える可能性がある。
+しかしp値を見ると(7)のモデルはどれも有意水準よりもはるかに高く、効果がないという可能性もある点に注意する必要がある。
+
+
+\section{(8)解答}
+
+step関数を使用し、(7)で求めたAICより小さい値を保有するモデルを算出すると、下記のモデルが考えられた。
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single]
+    Call:
+    lm(formula = grmax ~ age + ht + wt + age:ht + ht:wt, data = data)
+    
+    Residuals:
+         Min       1Q   Median       3Q      Max 
+    -29.1085  -3.7875  -0.2145   3.6634  22.6312 
+    
+    Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) -93.703024  38.073569  -2.461 0.014037 *  
+    age           1.286273   0.380180   3.383 0.000747 ***
+    ht            0.786496   0.243723   3.227 0.001296 ** 
+    wt           -1.238333   0.383907  -3.226 0.001302 ** 
+    age:ht       -0.008927   0.002431  -3.672 0.000255 ***
+    ht:wt         0.008889   0.002436   3.649 0.000279 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+    
+    Residual standard error: 6.047 on 903 degrees of freedom
+    Multiple R-squared:  0.6136,    Adjusted R-squared:  0.6115 
+    F-statistic: 286.8 on 5 and 903 DF,  p-value: < 2.2e-16
+\end{lstlisting}
+このモデルを数式で表すと下記の通りとなる。
+$grmax = -93.703024 + 1.28627*age + 0.78649*ht - 1.23833*wt - 0.008927*age*ht + 0.008889*ht*wt$
+また、$AiC = 5859.224$である。
+
+\section{(9)解答}
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single]
+    Call:
+    lm(formula = grmax ~ wt, data = Data)
+    
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -34.854  -5.470  -0.692   4.808  27.145 
+    
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) -0.91185    1.67601  -0.544    0.587    
+    wt           0.55541    0.02853  19.469   <2e-16 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+    
+    Residual standard error: 8.152 on 907 degrees of freedom
+    Multiple R-squared:  0.2947,    Adjusted R-squared:  0.294 
+    F-statistic:   379 on 1 and 907 DF,  p-value: < 2.2e-16
+    \end{lstlisting}
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single]
+    Call:
+    lm(formula = grmax ~ ht, data = Data)
+    
+    Residuals:
+            Min       1Q   Median       3Q      Max 
+    -25.9019  -4.0089  -0.2739   3.9494  23.2542 
+    
+    Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) -106.9868     4.0168  -26.64   <2e-16 ***
+    ht             0.8893     0.0258   34.47   <2e-16 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+    
+    Residual standard error: 6.386 on 907 degrees of freedom
+    Multiple R-squared:  0.5671,    Adjusted R-squared:  0.5667 
+    F-statistic:  1188 on 1 and 907 DF,  p-value: < 2.2e-16
+    \end{lstlisting}
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single]   
+    Call:
+    lm(formula = grmax ~ age, data = Data)
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -19.972  -7.061  -2.351   6.678  30.290 
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) 46.30143    1.85535  24.956  < 2e-16 ***
+    age         -0.24630    0.03001  -8.206 7.77e-16 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 9.366 on 907 degrees of freedom
+    Multiple R-squared:  0.06912,   Adjusted R-squared:  0.06809 
+    F-statistic: 67.35 on 1 and 907 DF,  p-value: 7.769e-1
+    \end{lstlisting}
+
+単回帰の結果をそれぞれ読み取ると、grmaxはwtに強い正の相関を持ち、htに弱い正の相関、ageに弱い負の相関を持つことが読み取れる。
+また先ほどの交互作用項を考慮していない重回帰モデルでは、htに強い相関があることが分かる。
+また交互作用項を考慮した場合の重回帰モデルで、決定係数及,残差標準偏差,AIC全てにおいて最適にモデルを示していると考えられる(8)で作成したモデルを見ると、
+age,ht項に正の相関が存在し,wtに負の相関が生じた。
+それぞれの分析法によって変数間の関係性が異なるが、最もモデルを反映している改良済みの交互作用項を考慮した重回帰分析の結果を重視すると、
+交互作用項による影響はwt,htが共に高い場合grmaxが増加すると推測が出来る。
+またage,htに正の相関があり、wtに負の相関があることが読み取れる。
+最終的な判断としては唯体重が重いだけでは握力に負の影響を及ぼすが、身長と年齢は単独でgrmaxに正の影響を及ぼし、身長に付随して体重も重い状態であれば握力に正の影響を及ぼすと考えられる。
+
+
+\section{ソースコード}
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single]
+    Data <- read.table("week9-data.txt",header = TRUE)
+    # データの整形
+    age <- Data$age
+    ht <- Data$ht
+    wt <- Data$wt
+    grmax <- Data$grmax
+    
+    # 単回帰分析
+    model_age <- lm(grmax ~ age, data = Data)
+    model_ht <- lm(grmax ~ ht, data = Data)
+    model_wt <- lm(grmax ~ wt, data = Data)
+    
+    # 結果の表示
+    summary(model_age)
+    summary(model_ht)
+    summary(model_wt)
+    
+    # データフレームの用意
+    data <- data.frame(age = age,
+                       ht = ht,
+                       wt = wt,
+                       grmax = grmax)
+    
+    # 重回帰モデルの構築
+    model <- lm(grmax ~ age + ht + wt, data = data)
+    
+    # モデルのサマリーを表示
+    summary(model)
+    
+    data <- data.frame(age = age,
+                       ht = ht,
+                       wt = wt)
+    
+    # 相関行列の計算
+    cor_matrix <- cor(data)
+    
+    # 相関行列の表示
+    print(cor_matrix)
+    
+     # 重回帰モデルに交互作用項を含める
+     model_interaction <- lm(grmax ~ age * ht * wt, data = data)
+     
+    # モデルのサマリーを表示
+    summary(model_interaction)
+    
+    aic_value <- AIC(model_interaction)
+    
+    # step関数を使用して変数の選択を行う
+    final_model <- step(model_interaction , direction = "both", trace = 0)
+    
+    # ファイナルモデルの表示
+    summary(final_model)
+    
+    aic_value <- AIC(final_model)
+\end{lstlisting}
+\end{document}
